@@ -4,7 +4,32 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { getOrders, getProducts, updateOrderStatus, saveProduct, deleteProduct } from "@/lib/db";
 import { Order, Product } from "@/lib/seed";
-import { X } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { 
+  X, 
+  LayoutDashboard, 
+  ShoppingBag, 
+  ChefHat, 
+  Plus, 
+  Trash2, 
+  Edit, 
+  LogOut, 
+  Globe, 
+  Calendar, 
+  DollarSign, 
+  Users, 
+  FileText, 
+  Clock, 
+  Check, 
+  ChevronRight, 
+  ClipboardList, 
+  User, 
+  Phone, 
+  Mail, 
+  TrendingUp,
+  CheckCircle2,
+  AlertTriangle
+} from "lucide-react";
 
 export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -42,10 +67,33 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Fetch orders and products when logged in
+  // Fetch orders and products when logged in & subscribe to Supabase Realtime
   useEffect(() => {
-    if (isLoggedIn) {
-      loadData();
+    if (!isLoggedIn) return;
+
+    loadData();
+
+    // Only subscribe to realtime if database provider is supabase
+    if (process.env.NEXT_PUBLIC_DATABASE_PROVIDER === "supabase") {
+      const channel = supabase
+        .channel("admin-orders-realtime")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "orders",
+          },
+          (payload) => {
+            console.log("Realtime change received:", payload);
+            loadData();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [isLoggedIn]);
 
@@ -237,74 +285,85 @@ export default function AdminPage() {
 
   // LOGGED IN ADMIN PANEL
   return (
-    <div className="min-h-screen bg-surface-bright pb-16 flex flex-col">
+    <div className="min-h-screen bg-surface-bright pb-16 flex flex-col font-sans">
       {/* Top Admin Nav */}
-      <nav className="bg-surface-container-low border-b border-outline-variant/20 py-4 px-6 flex justify-between items-center">
+      <nav className="bg-surface-container-low/95 backdrop-blur-md sticky top-0 z-40 border-b border-outline-variant/20 py-3.5 px-6 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-4">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" className="h-10 w-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" className="h-9 w-auto">
             <text x="50%" y="50%" dominantBaseline="middle" textAnchor="middle" fontFamily="var(--font-serif)" fontSize="38" fill="#3D1F0D" fontWeight="600" letterSpacing="-1">Paci's Cakes</text>
             <path d="M90 52 Q150 62 210 52" stroke="#E8B4B8" strokeWidth="2.5" fill="none" opacity="0.8"/>
           </svg>
-          <span className="text-[10px] font-label-md uppercase tracking-widest text-primary bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full hidden sm:inline-block">
-            Modo Administrador
+          <span className="text-[10px] font-label-md uppercase tracking-widest text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full hidden sm:inline-flex items-center gap-1.5 font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+            Panel de Control
           </span>
         </div>
         
         <div className="flex items-center gap-4">
           <Link
             href="/"
-            className="text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider"
+            className="text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider flex items-center gap-1.5 border border-outline-variant/40 hover:border-primary/30 px-3.5 py-1.5 rounded-lg bg-surface-bright"
           >
-            Ver Sitio
+            <Globe className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Ver Sitio Público</span>
+            <span className="sm:hidden">Ver Sitio</span>
           </Link>
           <button
             onClick={handleLogout}
-            className="text-xs font-semibold text-error hover:text-error/85 transition-colors uppercase tracking-wider cursor-pointer border border-error/20 hover:bg-error/5 px-3 py-1.5 rounded"
+            className="text-xs font-semibold text-error hover:text-white transition-all uppercase tracking-wider cursor-pointer border border-error/20 hover:border-error bg-error/5 hover:bg-error px-3.5 py-1.5 rounded-lg flex items-center gap-1.5"
           >
-            Salir
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Salir</span>
           </button>
         </div>
       </nav>
 
       {/* Main Admin Section */}
-      <div className="max-w-container-max mx-auto px-gutter py-10 w-full flex-1">
+      <div className="max-w-container-max mx-auto px-gutter py-8 w-full flex-1">
         {/* Navigation Tabs */}
-        <div className="flex border-b border-outline-variant/25 mb-10 gap-6">
+        <div className="flex border-b border-outline-variant/25 mb-8 gap-1.5 sm:gap-6 overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab("stats")}
-            className={`pb-4 text-xs font-label-lg uppercase tracking-wider cursor-pointer relative ${
+            className={`pb-4 text-xs font-label-lg uppercase tracking-wider cursor-pointer relative flex items-center gap-2 px-1 whitespace-nowrap transition-all ${
               activeTab === "stats" ? "text-primary font-bold" : "text-on-surface-variant hover:text-primary"
             }`}
           >
-            Dashboard
-            {activeTab === "stats" && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
+            <LayoutDashboard className="w-4 h-4" />
+            <span>Dashboard</span>
+            {activeTab === "stats" && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t" />}
           </button>
           
           <button
             onClick={() => setActiveTab("orders")}
-            className={`pb-4 text-xs font-label-lg uppercase tracking-wider cursor-pointer relative ${
+            className={`pb-4 text-xs font-label-lg uppercase tracking-wider cursor-pointer relative flex items-center gap-2 px-1 whitespace-nowrap transition-all ${
               activeTab === "orders" ? "text-primary font-bold" : "text-on-surface-variant hover:text-primary"
             }`}
           >
-            Pedidos ({orders.length})
-            {activeTab === "orders" && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
+            <ShoppingBag className="w-4 h-4" />
+            <span>Pedidos</span>
+            <span className="bg-primary-container/20 text-on-primary-container text-[10px] font-bold px-2 py-0.5 rounded-full border border-primary-container/20">
+              {orders.length}
+            </span>
+            {activeTab === "orders" && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t" />}
           </button>
 
           <button
             onClick={() => setActiveTab("menu")}
-            className={`pb-4 text-xs font-label-lg uppercase tracking-wider cursor-pointer relative ${
+            className={`pb-4 text-xs font-label-lg uppercase tracking-wider cursor-pointer relative flex items-center gap-2 px-1 whitespace-nowrap transition-all ${
               activeTab === "menu" ? "text-primary font-bold" : "text-on-surface-variant hover:text-primary"
             }`}
           >
-            Administrar Menú
-            {activeTab === "menu" && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary" />}
+            <ChefHat className="w-4 h-4" />
+            <span>Administrar Menú</span>
+            {activeTab === "menu" && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-primary rounded-t" />}
           </button>
         </div>
 
         {/* LOADING INDICATOR */}
         {isLoading && (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="flex flex-col justify-center items-center py-20 gap-3">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+            <p className="text-xs text-on-surface-variant font-medium">Actualizando información...</p>
           </div>
         )}
 
@@ -313,78 +372,137 @@ export default function AdminPage() {
           <>
             {/* TAB 1: DASHBOARD STATS */}
             {activeTab === "stats" && (
-              <div className="space-y-10 animate-fade-in">
+              <div className="space-y-8 animate-fade-in">
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div className="bg-surface-container-low border border-outline-variant/30 p-6 rounded-xl shadow-sm">
-                    <span className="text-[10px] font-label-md uppercase tracking-wider text-on-surface-variant/80 block mb-1">
-                      Ventas Totales
-                    </span>
-                    <div className="font-serif text-3xl font-bold text-dark-chocolate">
-                      {formatPrice(statsRevenue)}
+                  {/* Revenue Card */}
+                  <div className="bg-surface-container-low border border-outline-variant/30 p-6 rounded-xl shadow-sm hover:shadow transition-shadow relative overflow-hidden group">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 block mb-1">
+                          Ventas Totales
+                        </span>
+                        <div className="font-serif text-2xl sm:text-3xl font-bold text-dark-chocolate">
+                          {formatPrice(statsRevenue)}
+                        </div>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-600">
+                        <DollarSign className="w-5 h-5" />
+                      </div>
                     </div>
-                    <span className="text-[10px] text-primary/75 mt-1 block">Excluye pedidos cancelados</span>
+                    <span className="text-[10px] text-emerald-600/80 font-medium mt-3 flex items-center gap-1">
+                      <TrendingUp className="w-3.5 h-3.5" /> Excluye cancelados
+                    </span>
                   </div>
 
-                  <div className="bg-surface-container-low border border-outline-variant/30 p-6 rounded-xl shadow-sm">
-                    <span className="text-[10px] font-label-md uppercase tracking-wider text-on-surface-variant/80 block mb-1">
-                      Pendientes
-                    </span>
-                    <div className="font-serif text-3xl font-bold text-dark-chocolate">
-                      {statsPending}
+                  {/* Pending Card */}
+                  <div className="bg-surface-container-low border border-outline-variant/30 p-6 rounded-xl shadow-sm hover:shadow transition-shadow relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 block mb-1">
+                          Pendientes
+                        </span>
+                        <div className="font-serif text-2xl sm:text-3xl font-bold text-dark-chocolate">
+                          {statsPending}
+                        </div>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-amber-50 text-amber-600">
+                        <Clock className="w-5 h-5" />
+                      </div>
                     </div>
-                    <span className="text-[10px] text-on-surface-variant/70 mt-1 block">Requieren revisión</span>
+                    <span className="text-[10px] text-amber-600/80 font-medium mt-3 block">Requieren aprobación</span>
                   </div>
 
-                  <div className="bg-surface-container-low border border-outline-variant/30 p-6 rounded-xl shadow-sm">
-                    <span className="text-[10px] font-label-md uppercase tracking-wider text-on-surface-variant/80 block mb-1">
-                      En Cocina
-                    </span>
-                    <div className="font-serif text-3xl font-bold text-dark-chocolate">
-                      {statsProduction}
+                  {/* In Production Card */}
+                  <div className="bg-surface-container-low border border-outline-variant/30 p-6 rounded-xl shadow-sm hover:shadow transition-shadow relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 block mb-1">
+                          En Cocina
+                        </span>
+                        <div className="font-serif text-2xl sm:text-3xl font-bold text-dark-chocolate">
+                          {statsProduction}
+                        </div>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-purple-50 text-purple-600">
+                        <ChefHat className="w-5 h-5" />
+                      </div>
                     </div>
-                    <span className="text-[10px] text-on-surface-variant/70 mt-1 block">En preparación activa</span>
+                    <span className="text-[10px] text-purple-600/80 font-medium mt-3 block">En elaboración activa</span>
                   </div>
 
-                  <div className="bg-surface-container-low border border-outline-variant/30 p-6 rounded-xl shadow-sm">
-                    <span className="text-[10px] font-label-md uppercase tracking-wider text-on-surface-variant/80 block mb-1">
-                      Listos para Entrega
-                    </span>
-                    <div className="font-serif text-3xl font-bold text-dark-chocolate">
-                      {statsReady}
+                  {/* Ready Card */}
+                  <div className="bg-surface-container-low border border-outline-variant/30 p-6 rounded-xl shadow-sm hover:shadow transition-shadow relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-teal-500"></div>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/80 block mb-1">
+                          Listos para Entrega
+                        </span>
+                        <div className="font-serif text-2xl sm:text-3xl font-bold text-dark-chocolate">
+                          {statsReady}
+                        </div>
+                      </div>
+                      <div className="p-2.5 rounded-lg bg-teal-50 text-teal-600">
+                        <CheckCircle2 className="w-5 h-5" />
+                      </div>
                     </div>
-                    <span className="text-[10px] text-on-surface-variant/70 mt-1 block">Esperando retiro/despacho</span>
+                    <span className="text-[10px] text-teal-600/80 font-medium mt-3 block">Esperando entrega/retiro</span>
                   </div>
                 </div>
 
                 {/* Recent Orders Overview */}
                 <div className="bg-surface-container-low border border-outline-variant/20 rounded-xl p-6 shadow-sm">
-                  <h3 className="font-headline-sm text-xl text-dark-chocolate mb-4 border-b border-outline-variant/10 pb-3">
-                    Pedidos Recientes
-                  </h3>
+                  <div className="flex justify-between items-center mb-5 border-b border-outline-variant/10 pb-4">
+                    <h3 className="font-headline-sm text-xl text-dark-chocolate flex items-center gap-2">
+                      <ClipboardList className="w-5 h-5 text-primary" />
+                      Pedidos Recientes
+                    </h3>
+                    <button
+                      onClick={() => setActiveTab("orders")}
+                      className="text-xs text-primary font-bold hover:underline"
+                    >
+                      Ver todos los pedidos
+                    </button>
+                  </div>
                   
                   {orders.length === 0 ? (
-                    <p className="text-on-surface-variant text-sm py-4 text-center">No hay pedidos registrados.</p>
+                    <p className="text-on-surface-variant text-sm py-8 text-center font-medium">No hay pedidos registrados en la base de datos.</p>
                   ) : (
-                    <div className="space-y-4">
-                      {orders.slice(0, 5).map((o) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {orders.slice(0, 6).map((o) => (
                         <div
                           key={o.id}
                           onClick={() => openOrderModal(o)}
-                          className="flex justify-between items-center p-4 border border-outline-variant/10 rounded-lg hover:border-primary/40 cursor-pointer bg-surface-bright/50 transition-colors"
+                          className="flex justify-between items-center p-4 border border-outline-variant/10 rounded-xl hover:border-primary/45 cursor-pointer bg-surface-bright hover:shadow-sm transition-all duration-300 group"
                         >
-                          <div>
-                            <span className="font-mono text-xs font-bold text-primary block">{o.id}</span>
-                            <span className="font-medium text-sm text-dark-chocolate mt-0.5 inline-block">{o.customerName}</span>
-                            <span className="text-xs text-on-surface-variant/70 block sm:inline-block sm:ml-4">
-                              {o.orderType === "custom" ? "Torta Personalizada" : "Catálogo"} · {o.eventDate}
+                          <div className="space-y-1">
+                            <span className="font-mono text-xs font-bold text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded-md inline-block">{o.id}</span>
+                            <span className="font-semibold text-sm text-dark-chocolate block group-hover:text-primary transition-colors">{o.customerName}</span>
+                            <span className="text-xs text-on-surface-variant/80 flex items-center gap-1.5">
+                              <Calendar className="w-3.5 h-3.5 text-on-surface-variant/60" /> {o.eventDate}
                             </span>
                           </div>
                           
-                          <div className="text-right">
-                            <span className="font-serif text-sm font-semibold text-dark-chocolate block">{formatPrice(o.totalPrice)}</span>
-                            <span className="text-[10px] uppercase font-semibold text-primary/80 mt-1 inline-block">
-                              {o.status}
+                          <div className="text-right flex flex-col items-end gap-1.5">
+                            <span className="font-serif text-sm font-bold text-dark-chocolate">{formatPrice(o.totalPrice)}</span>
+                            <span className={`text-[9px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${
+                              o.status === "pending" ? "bg-amber-50 text-amber-700 border-amber-200/50" :
+                              o.status === "approved" ? "bg-sky-50 text-sky-700 border-sky-200/50" :
+                              o.status === "production" ? "bg-purple-50 text-purple-700 border-purple-200/50" :
+                              o.status === "ready" ? "bg-emerald-50 text-emerald-700 border-emerald-200/50" :
+                              o.status === "delivered" ? "bg-zinc-50 text-zinc-600 border-zinc-200/50" :
+                              "bg-rose-50 text-rose-700 border-rose-200/50"
+                            }`}>
+                              {o.status === "pending" ? "Pendiente" :
+                               o.status === "approved" ? "Aprobado" :
+                               o.status === "production" ? "En Cocina" :
+                               o.status === "ready" ? "Listo" :
+                               o.status === "delivered" ? "Entregado" :
+                               "Cancelado"}
                             </span>
                           </div>
                         </div>
@@ -401,7 +519,7 @@ export default function AdminPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-sm">
                     <thead>
-                      <tr className="bg-surface-container text-dark-chocolate font-label-lg text-xs uppercase tracking-wider border-b border-outline-variant/20">
+                      <tr className="bg-surface-container text-dark-chocolate font-label-lg text-xs uppercase tracking-wider border-b border-outline-variant/25">
                         <th className="py-4 px-6">Código</th>
                         <th className="py-4 px-6">Cliente</th>
                         <th className="py-4 px-6">Fecha Evento</th>
@@ -413,39 +531,51 @@ export default function AdminPage() {
                     </thead>
                     <tbody className="divide-y divide-outline-variant/10">
                       {orders.map((o) => (
-                        <tr key={o.id} className="hover:bg-surface-container-low/50 transition-colors">
-                          <td className="py-4 px-6 font-mono text-xs font-bold text-primary">{o.id}</td>
+                        <tr key={o.id} className="hover:bg-surface-bright/50 transition-colors group">
                           <td className="py-4 px-6">
-                            <div className="font-medium text-dark-chocolate">{o.customerName}</div>
-                            <div className="text-xs text-on-surface-variant/70">{o.customerPhone}</div>
+                            <span className="font-mono text-xs font-bold text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded-md inline-block">{o.id}</span>
                           </td>
-                          <td className="py-4 px-6 text-xs text-on-surface-variant">{o.eventDate}</td>
                           <td className="py-4 px-6">
-                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
-                              o.orderType === "custom" ? "bg-tertiary-container/30 text-tertiary" : "bg-primary-container/20 text-on-primary-container"
+                            <div className="font-semibold text-dark-chocolate group-hover:text-primary transition-colors">{o.customerName}</div>
+                            <div className="text-xs text-on-surface-variant/75 flex items-center gap-1 mt-0.5">
+                              <Phone className="w-3 h-3 text-on-surface-variant/50" /> {o.customerPhone}
+                            </div>
+                          </td>
+                          <td className="py-4 px-6 text-xs text-on-surface-variant font-medium">{o.eventDate}</td>
+                          <td className="py-4 px-6">
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
+                              o.orderType === "custom" ? "bg-tertiary-container/10 text-tertiary border-tertiary-container/30" : "bg-primary-container/10 text-on-primary-container border-primary-container/30"
                             }`}>
                               {o.orderType === "custom" ? "Personalizada" : "Catálogo"}
                             </span>
                           </td>
-                          <td className="py-4 px-6 text-right font-serif font-semibold text-dark-chocolate">
+                          <td className="py-4 px-6 text-right font-serif font-bold text-dark-chocolate">
                             {formatPrice(o.totalPrice)}
                           </td>
                           <td className="py-4 px-6">
-                            <span className={`text-[10px] uppercase font-bold tracking-wider ${
-                              o.status === "pending" ? "text-tertiary" :
-                              o.status === "production" ? "text-primary" :
-                              o.status === "ready" ? "text-[#25D366]" :
-                              o.status === "delivered" ? "text-primary/70" : "text-error"
+                            <span className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full border inline-block ${
+                              o.status === "pending" ? "bg-amber-50 text-amber-700 border-amber-200/50" :
+                              o.status === "approved" ? "bg-sky-50 text-sky-700 border-sky-200/50" :
+                              o.status === "production" ? "bg-purple-50 text-purple-700 border-purple-200/50" :
+                              o.status === "ready" ? "bg-emerald-50 text-emerald-700 border-emerald-200/50" :
+                              o.status === "delivered" ? "bg-zinc-50 text-zinc-600 border-zinc-200/50" :
+                              "bg-rose-50 text-rose-700 border-rose-200/50"
                             }`}>
-                              {o.status}
+                              {o.status === "pending" ? "Pendiente" :
+                               o.status === "approved" ? "Aprobado" :
+                               o.status === "production" ? "En Cocina" :
+                               o.status === "ready" ? "Listo" :
+                               o.status === "delivered" ? "Entregado" :
+                               "Cancelado"}
                             </span>
                           </td>
                           <td className="py-4 px-6 text-center">
                             <button
                               onClick={() => openOrderModal(o)}
-                              className="text-xs bg-surface-bright hover:bg-primary hover:text-white border border-outline-variant/50 transition-colors px-3 py-1.5 rounded cursor-pointer font-medium"
+                              className="text-xs bg-surface-bright hover:bg-primary hover:text-white border border-outline-variant/60 hover:border-primary transition-all px-3.5 py-1.5 rounded-lg cursor-pointer font-bold inline-flex items-center gap-1.5"
                             >
-                              Administrar
+                              <ClipboardList className="w-3.5 h-3.5" />
+                              <span>Administrar</span>
                             </button>
                           </td>
                         </tr>
@@ -459,118 +589,128 @@ export default function AdminPage() {
             {/* TAB 3: MENU CRUD MANAGER */}
             {activeTab === "menu" && (
               <div className="space-y-6 animate-fade-in">
-                <div className="flex justify-between items-center">
-                  <h3 className="font-headline-sm text-xl text-dark-chocolate">Gestión de Catálogo</h3>
+                <div className="flex justify-between items-center border-b border-outline-variant/10 pb-4">
+                  <div>
+                    <h3 className="font-headline-sm text-xl text-dark-chocolate">Gestión de Catálogo</h3>
+                    <p className="text-xs text-on-surface-variant">Agrega, edita o elimina los productos de la tienda.</p>
+                  </div>
                   {!isAddingProduct && (
                     <button
                       onClick={() => {
                         resetProductForm();
                         setIsAddingProduct(true);
                       }}
-                      className="bg-primary text-surface-bright px-4 py-2 rounded text-xs font-label-lg uppercase tracking-wider cursor-pointer"
+                      className="bg-primary text-surface-bright px-4 py-2.5 rounded-lg hover:bg-on-primary-container transition-colors text-xs font-label-lg uppercase tracking-wider cursor-pointer flex items-center gap-1.5"
                     >
-                      Añadir Producto
+                      <Plus className="w-4 h-4" />
+                      <span>Añadir Producto</span>
                     </button>
                   )}
                 </div>
 
                 {isAddingProduct ? (
                   /* Add/Edit Form */
-                  <form onSubmit={handleSaveProduct} className="bg-surface-container-low border border-outline-variant/20 p-8 rounded-xl shadow-sm space-y-6 max-w-xl">
-                    <h4 className="font-headline-sm text-lg text-dark-chocolate border-b border-outline-variant/10 pb-3">
-                      {editingProduct ? "Editar Producto" : "Nuevo Producto"}
+                  <form onSubmit={handleSaveProduct} className="bg-surface-container-low border border-outline-variant/20 p-8 rounded-xl shadow-sm space-y-6 max-w-2xl mx-auto animate-scale-up">
+                    <h4 className="font-headline-sm text-lg text-dark-chocolate border-b border-outline-variant/10 pb-3 flex items-center gap-2">
+                      <ChefHat className="w-5 h-5 text-primary" />
+                      {editingProduct ? "Editar Producto del Menú" : "Añadir Nuevo Producto al Menú"}
                     </h4>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5" htmlFor="prod-name">
+                        <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5 font-bold" htmlFor="prod-name">
                           Nombre del Producto *
                         </label>
                         <input
                           type="text"
                           id="prod-name"
                           required
+                          placeholder="Ej. Torta Tentación de Caramelo"
                           value={prodName}
                           onChange={(e) => setProdName(e.target.value)}
-                          className="w-full bg-surface-bright border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary rounded px-3 py-2 text-sm outline-none"
+                          className="w-full bg-surface-bright border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors"
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5" htmlFor="prod-price">
-                          Precio de Base *
+                        <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5 font-bold" htmlFor="prod-price">
+                          Precio de Base ($ COP) *
                         </label>
                         <input
                           type="number"
                           id="prod-price"
                           required
+                          placeholder="Ej. 120000"
                           value={prodPrice}
                           onChange={(e) => setProdPrice(e.target.value)}
-                          className="w-full bg-surface-bright border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary rounded px-3 py-2 text-sm outline-none"
+                          className="w-full bg-surface-bright border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5" htmlFor="prod-cat">
+                        <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5 font-bold" htmlFor="prod-cat">
                           Categoría *
                         </label>
                         <select
                           id="prod-cat"
                           value={prodCat}
                           onChange={(e) => setProdCat(e.target.value as any)}
-                          className="w-full bg-surface-bright border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary rounded px-3 py-2 text-sm outline-none"
+                          className="w-full bg-surface-bright border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors"
                         >
                           <option value="tortas">Tortas</option>
                           <option value="cupcakes">Cupcakes</option>
                           <option value="galletas">Galletas</option>
                           <option value="especiales">Especiales</option>
+                          <option value="creaciones">Creaciones</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5" htmlFor="prod-img">
-                          URL de Imagen *
+                        <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5 font-bold" htmlFor="prod-img">
+                          URL de Imagen (Supabase Bucket o pública) *
                         </label>
                         <input
                           type="text"
                           id="prod-img"
                           required
+                          placeholder="https://..."
                           value={prodImg}
                           onChange={(e) => setProdImg(e.target.value)}
-                          className="w-full bg-surface-bright border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary rounded px-3 py-2 text-sm outline-none"
+                          className="w-full bg-surface-bright border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3.5 py-2.5 text-sm outline-none transition-colors"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5" htmlFor="prod-desc">
-                        Descripción
+                      <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5 font-bold" htmlFor="prod-desc">
+                        Descripción Corta
                       </label>
                       <textarea
                         id="prod-desc"
                         rows={3}
+                        placeholder="Describe los ingredientes, decoraciones o detalles de empaque..."
                         value={prodDesc}
                         onChange={(e) => setProdDesc(e.target.value)}
-                        className="w-full bg-surface-bright border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary rounded px-3 py-2 text-sm outline-none resize-none"
+                        className="w-full bg-surface-bright border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3.5 py-2.5 text-sm outline-none resize-none transition-colors"
                       />
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2.5 bg-surface-bright p-4 rounded-lg border border-outline-variant/20">
                       <input
                         type="checkbox"
                         id="prod-active"
                         checked={prodActive}
                         onChange={(e) => setProdActive(e.target.checked)}
-                        className="rounded border-outline-variant text-primary focus:ring-primary h-4 w-4"
+                        className="rounded border-outline-variant text-primary focus:ring-primary h-4.5 w-4.5 cursor-pointer"
                       />
-                      <label htmlFor="prod-active" className="text-xs text-dark-chocolate font-semibold cursor-pointer">
-                        Producto Activo (Mostrar en el catálogo público)
+                      <label htmlFor="prod-active" className="text-xs text-dark-chocolate font-bold cursor-pointer select-none">
+                        Producto Activo (Visible en el catálogo del sitio)
                       </label>
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/10">
+                    <div className="flex justify-end gap-3 pt-5 border-t border-outline-variant/15">
                       <button
                         type="button"
                         onClick={() => {
@@ -578,69 +718,78 @@ export default function AdminPage() {
                           setEditingProduct(null);
                           resetProductForm();
                         }}
-                        className="px-4 py-2 border border-outline-variant rounded text-xs font-label-lg uppercase tracking-wider cursor-pointer"
+                        className="px-4 py-2 border border-outline-variant rounded-lg text-xs font-label-lg uppercase tracking-wider cursor-pointer font-bold"
                       >
                         Cancelar
                       </button>
                       <button
                         type="submit"
-                        className="bg-primary text-surface-bright px-5 py-2 rounded text-xs font-label-lg uppercase tracking-wider cursor-pointer"
+                        className="bg-primary text-surface-bright px-5 py-2.5 rounded-lg hover:bg-on-primary-container transition-colors text-xs font-label-lg uppercase tracking-wider cursor-pointer font-bold"
                       >
                         Guardar Producto
                       </button>
                     </div>
                   </form>
                 ) : (
-                  /* Products Table List */
-                  <div className="bg-surface-container-low border border-outline-variant/20 rounded-xl overflow-hidden shadow-sm">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse text-sm">
-                        <thead>
-                          <tr className="bg-surface-container text-dark-chocolate font-label-lg text-xs uppercase tracking-wider border-b border-outline-variant/20">
-                            <th className="py-4 px-6 w-20">Foto</th>
-                            <th className="py-4 px-6">Producto</th>
-                            <th className="py-4 px-6">Categoría</th>
-                            <th className="py-4 px-6 text-right">Precio</th>
-                            <th className="py-4 px-6 text-center">Estado</th>
-                            <th className="py-4 px-6 text-center">Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-outline-variant/10">
-                          {products.map((p) => (
-                            <tr key={p.id} className="hover:bg-surface-container-low/50 transition-colors">
-                              <td className="py-4 px-6">
-                                <img src={p.image} alt={p.name} className="w-12 h-12 object-cover rounded" />
-                              </td>
-                              <td className="py-4 px-6">
-                                <div className="font-semibold text-dark-chocolate">{p.name}</div>
-                                <div className="text-xs text-on-surface-variant/80 line-clamp-1 max-w-sm">{p.description}</div>
-                              </td>
-                              <td className="py-4 px-6 text-xs text-on-surface-variant uppercase font-medium">{p.category}</td>
-                              <td className="py-4 px-6 text-right font-serif font-semibold text-dark-chocolate">{formatPrice(p.price)}</td>
-                              <td className="py-4 px-6 text-center">
-                                <span className={`inline-block w-2.5 h-2.5 rounded-full ${p.active ? "bg-[#25D366]" : "bg-outline"}`} title={p.active ? "Activo" : "Inactivo"}></span>
-                              </td>
-                              <td className="py-4 px-6 text-center">
-                                <div className="flex justify-center gap-2">
-                                  <button
-                                    onClick={() => handleEditProductClick(p)}
-                                    className="text-xs bg-surface-bright border border-outline-variant/50 hover:border-primary hover:text-primary px-2.5 py-1.5 rounded transition-colors cursor-pointer"
-                                  >
-                                    Editar
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteProductClick(p.id)}
-                                    className="text-xs border border-error/20 bg-error/5 hover:bg-error hover:text-white text-error px-2.5 py-1.5 rounded transition-colors cursor-pointer"
-                                  >
-                                    Borrar
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                  /* Products Card Grid Redesign */
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {products.map((p) => (
+                      <div key={p.id} className="bg-surface-container-low border border-outline-variant/20 rounded-xl overflow-hidden shadow-sm flex flex-col group hover:shadow-md transition-shadow">
+                        {/* Image Container */}
+                        <div className="h-48 relative bg-surface-container-high overflow-hidden border-b border-outline-variant/10">
+                          <img 
+                            src={p.image} 
+                            alt={p.name} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                          />
+                          <span className="absolute top-3 right-3 bg-surface-bright/90 backdrop-blur-md text-dark-chocolate text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm border border-outline-variant/10 uppercase">
+                            {p.category}
+                          </span>
+                          {!p.active && (
+                            <div className="absolute inset-0 bg-dark-chocolate/50 backdrop-blur-[1px] flex items-center justify-center">
+                              <span className="bg-rose-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider shadow">
+                                Inactivo
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Details */}
+                        <div className="p-5 flex-1 flex flex-col justify-between">
+                          <div className="space-y-2">
+                            <h4 className="font-headline-sm text-lg text-dark-chocolate font-bold leading-tight group-hover:text-primary transition-colors">
+                              {p.name}
+                            </h4>
+                            <p className="text-xs text-on-surface-variant/85 leading-relaxed line-clamp-3">
+                              {p.description}
+                            </p>
+                          </div>
+
+                          <div className="pt-4 mt-4 border-t border-outline-variant/10 flex justify-between items-center">
+                            <span className="font-serif text-base font-bold text-primary">
+                              {formatPrice(p.price)}
+                            </span>
+                            
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleEditProductClick(p)}
+                                className="text-[11px] bg-surface-bright border border-outline-variant/50 hover:border-primary hover:text-primary px-3 py-1.5 rounded-lg transition-colors cursor-pointer font-bold flex items-center gap-1"
+                              >
+                                <Edit className="w-3 h-3" />
+                                <span>Editar</span>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProductClick(p.id)}
+                                className="text-[11px] border border-error/20 bg-error/5 hover:bg-error hover:text-white text-error px-3 py-1.5 rounded-lg transition-colors cursor-pointer font-bold flex items-center gap-1"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                <span>Borrar</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -651,135 +800,149 @@ export default function AdminPage() {
 
       {/* DETAIL AND EDIT STATUS MODAL FOR ORDERS */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-chocolate/40 backdrop-blur-sm animate-fade-in">
-          <div className="bg-surface-bright rounded-xl max-w-xl w-full overflow-hidden shadow-2xl border border-outline-variant/20 relative animate-scale-up max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-chocolate/50 backdrop-blur-md animate-fade-in">
+          <div className="bg-surface-bright rounded-2xl max-w-xl w-full overflow-hidden shadow-2xl border border-outline-variant/20 relative animate-scale-up max-h-[90vh] flex flex-col">
             {/* Header */}
-            <div className="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/30">
-              <div>
-                <span className="font-mono text-xs font-bold text-primary">{selectedOrder.id}</span>
-                <h3 className="font-display-lg text-2xl text-dark-chocolate mt-0.5">Administrar Pedido</h3>
+            <div className="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-surface-container-low/40">
+              <div className="space-y-1">
+                <span className="font-mono text-xs font-bold text-primary bg-primary/5 border border-primary/10 px-2 py-0.5 rounded-md inline-block">{selectedOrder.id}</span>
+                <h3 className="font-display-lg text-2xl text-dark-chocolate font-bold">Resumen de Comanda</h3>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="text-on-surface-variant hover:text-primary transition-colors cursor-pointer flex items-center justify-center"
+                className="text-on-surface-variant hover:text-primary transition-all cursor-pointer p-1.5 rounded-full hover:bg-surface-container-low"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Scrollable details */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {/* Customer Info */}
-              <div>
-                <h4 className="font-label-lg text-xs uppercase tracking-widest text-on-surface-variant mb-2">Información del Cliente</h4>
-                <div className="bg-surface-container-low/50 p-4 rounded border border-outline-variant/10 text-sm space-y-1 text-on-surface-variant">
-                  <div><strong>Nombre:</strong> {selectedOrder.customerName}</div>
-                  <div><strong>Teléfono:</strong> {selectedOrder.customerPhone}</div>
-                  {selectedOrder.customerEmail && <div><strong>Email:</strong> {selectedOrder.customerEmail}</div>}
-                  <div><strong>Fecha de Entrega:</strong> {selectedOrder.eventDate}</div>
+              <div className="space-y-2">
+                <h4 className="font-label-lg text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-primary" />
+                  Información del Cliente
+                </h4>
+                <div className="bg-surface-container-low/50 p-4 rounded-xl border border-outline-variant/15 text-sm space-y-2.5 text-on-surface-variant">
+                  <div className="flex items-center gap-2"><strong className="w-24 text-dark-chocolate text-xs uppercase tracking-wider">Nombre:</strong> {selectedOrder.customerName}</div>
+                  <div className="flex items-center gap-2"><strong className="w-24 text-dark-chocolate text-xs uppercase tracking-wider">Teléfono:</strong> {selectedOrder.customerPhone}</div>
+                  {selectedOrder.customerEmail && <div className="flex items-center gap-2"><strong className="w-24 text-dark-chocolate text-xs uppercase tracking-wider">Email:</strong> {selectedOrder.customerEmail}</div>}
+                  <div className="flex items-center gap-2"><strong className="w-24 text-dark-chocolate text-xs uppercase tracking-wider">Entrega:</strong> {selectedOrder.eventDate}</div>
                 </div>
               </div>
 
               {/* Order breakdown */}
-              <div>
-                <h4 className="font-label-lg text-xs uppercase tracking-widest text-on-surface-variant mb-2">Artículos del Pedido</h4>
+              <div className="space-y-2">
+                <h4 className="font-label-lg text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold flex items-center gap-1.5">
+                  <ShoppingBag className="w-3.5 h-3.5 text-primary" />
+                  Artículos del Pedido
+                </h4>
                 {selectedOrder.orderType === "catalog" ? (
                   /* Catalog items */
-                  <div className="space-y-2 bg-surface-container-low/50 p-4 rounded border border-outline-variant/10">
+                  <div className="space-y-2 bg-surface-container-low/50 p-4 rounded-xl border border-outline-variant/15">
                     {selectedOrder.items?.map((item, idx) => (
                       <div key={idx} className="flex justify-between items-center text-sm">
-                        <span>{item.name} <span className="text-xs text-on-surface-variant/75">(x{item.quantity})</span></span>
-                        <span className="font-mono font-medium">{formatPrice(item.price * item.quantity)}</span>
+                        <span>{item.name} <span className="text-xs text-primary font-bold">(x{item.quantity})</span></span>
+                        <span className="font-serif font-bold text-dark-chocolate">{formatPrice(item.price * item.quantity)}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
                   /* Custom cake details */
-                  <div className="bg-surface-container-low/50 p-4 rounded border border-outline-variant/10 text-sm space-y-2 text-on-surface-variant">
-                    <div><strong>Tipo:</strong> Torta Personalizada</div>
-                    <div><strong>Porciones:</strong> {selectedOrder.customDetails?.portions} porciones</div>
-                    <div><strong>Bizcocho:</strong> {selectedOrder.customDetails?.spongeFlavor}</div>
-                    <div><strong>Relleno:</strong> {selectedOrder.customDetails?.fillingFlavor}</div>
-                    <div><strong>Mensaje:</strong> <span className="italic text-primary">"{selectedOrder.customDetails?.cakeText}"</span></div>
-                    <div><strong>Gama de Colores:</strong> {selectedOrder.customDetails?.colors.join(", ")}</div>
+                  <div className="bg-surface-container-low/50 p-4 rounded-xl border border-outline-variant/15 text-sm space-y-2.5 text-on-surface-variant">
+                    <div className="flex items-center gap-2"><strong className="w-24 text-dark-chocolate text-xs uppercase tracking-wider">Tipo:</strong> Torta Personalizada</div>
+                    <div className="flex items-center gap-2"><strong className="w-24 text-dark-chocolate text-xs uppercase tracking-wider">Porciones:</strong> {selectedOrder.customDetails?.portions} porciones</div>
+                    <div className="flex items-center gap-2"><strong className="w-24 text-dark-chocolate text-xs uppercase tracking-wider">Bizcocho:</strong> {selectedOrder.customDetails?.spongeFlavor}</div>
+                    <div className="flex items-center gap-2"><strong className="w-24 text-dark-chocolate text-xs uppercase tracking-wider">Relleno:</strong> {selectedOrder.customDetails?.fillingFlavor}</div>
+                    <div className="flex items-center gap-2"><strong className="w-24 text-dark-chocolate text-xs uppercase tracking-wider">Colores:</strong> {selectedOrder.customDetails?.colors.join(", ")}</div>
+                    {selectedOrder.customDetails?.cakeText && (
+                      <div className="flex items-start gap-2">
+                        <strong className="w-24 text-dark-chocolate text-xs uppercase tracking-wider mt-0.5">Mensaje:</strong> 
+                        <span className="italic text-primary font-bold">"{selectedOrder.customDetails?.cakeText}"</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
 
               {/* Message from client */}
               {selectedOrder.message && (
-                <div>
-                  <h4 className="font-label-lg text-xs uppercase tracking-widest text-on-surface-variant mb-1.5">Instrucciones del Cliente</h4>
-                  <p className="text-xs bg-surface-container-low/50 p-3 rounded border border-outline-variant/15 text-on-surface-variant italic">
+                <div className="space-y-1.5">
+                  <h4 className="font-label-lg text-[10px] uppercase tracking-widest text-on-surface-variant/80 font-bold flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-primary" />
+                    Instrucciones Especiales
+                  </h4>
+                  <p className="text-xs bg-surface-container-low/50 p-3.5 rounded-xl border border-outline-variant/15 text-on-surface-variant italic leading-relaxed">
                     "{selectedOrder.message}"
                   </p>
                 </div>
               )}
 
               {/* Admin modifications (Price & Notes) */}
-              <div className="border-t border-outline-variant/20 pt-4 space-y-4">
-                <h4 className="font-label-lg text-xs uppercase tracking-widest text-on-surface-variant">Edición Administrativa</h4>
+              <div className="border-t border-outline-variant/20 pt-5 space-y-4">
+                <h4 className="font-label-lg text-[10px] uppercase tracking-widest text-dark-chocolate font-bold">Edición y Estado</h4>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">
                       Precio de Venta ($ COP)
                     </label>
                     <input
                       type="number"
                       value={editingOrderPrice}
                       onChange={(e) => setEditingOrderPrice(parseFloat(e.target.value) || 0)}
-                      className="w-full bg-surface-bright border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary rounded px-3 py-2 text-sm outline-none"
+                      className="w-full bg-surface-bright border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3 py-2 text-sm outline-none transition-colors"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">
                       Estado del Pedido
                     </label>
                     <select
                       value={selectedOrder.status}
                       onChange={(e) => handleUpdateStatus(selectedOrder.id, e.target.value as any)}
-                      className="w-full bg-surface-bright border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary rounded px-3 py-2 text-sm outline-none"
+                      className="w-full bg-surface-bright border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3 py-2 text-sm outline-none transition-colors"
                     >
-                      <option value="pending">Pendiente (pending)</option>
-                      <option value="approved">Aprobado (approved)</option>
-                      <option value="production">En Cocina (production)</option>
-                      <option value="ready">Listo para Entrega (ready)</option>
-                      <option value="delivered">Entregado (delivered)</option>
-                      <option value="cancelled">Cancelado (cancelled)</option>
+                      <option value="pending">⏳ Pendiente</option>
+                      <option value="approved">✔️ Aprobado</option>
+                      <option value="production">👩‍🍳 En Cocina</option>
+                      <option value="ready">📦 Listo para Entrega</option>
+                      <option value="delivered">💖 Entregado</option>
+                      <option value="cancelled">❌ Cancelado</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-label-md uppercase tracking-wider text-dark-chocolate mb-1.5">
-                    Notas Internas / Bitácora
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-1.5">
+                    Notas Internas (Bitácora de producción)
                   </label>
                   <textarea
                     rows={2}
                     value={editingOrderNotes}
                     onChange={(e) => setEditingOrderNotes(e.target.value)}
-                    className="w-full bg-surface-bright border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary rounded px-3 py-2 text-sm outline-none resize-none"
-                    placeholder="Notas visibles solo para administradores..."
+                    className="w-full bg-surface-bright border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg px-3 py-2 text-sm outline-none resize-none transition-colors"
+                    placeholder="Escribe detalles internos (ej. colores finales, insumos listos, etc.)"
                   />
                 </div>
               </div>
             </div>
 
             {/* Footer buttons for Order Modal */}
-            <div className="p-6 border-t border-outline-variant/20 flex justify-end gap-3 bg-surface-container-low/30">
+            <div className="p-6 border-t border-outline-variant/20 flex justify-end gap-3 bg-surface-container-low/40">
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="px-4 py-2 border border-outline-variant rounded text-xs font-label-lg uppercase tracking-wider cursor-pointer"
+                className="px-4 py-2 border border-outline-variant rounded-lg text-xs font-label-lg uppercase tracking-wider cursor-pointer font-bold transition-colors hover:bg-surface-container-low"
               >
                 Cerrar sin guardar
               </button>
               <button
                 type="button"
                 onClick={handleSaveOrderChanges}
-                className="bg-primary text-surface-bright px-5 py-2 rounded text-xs font-label-lg uppercase tracking-wider cursor-pointer"
+                className="bg-primary text-surface-bright px-5 py-2.5 rounded-lg hover:bg-on-primary-container transition-colors text-xs font-label-lg uppercase tracking-wider cursor-pointer font-bold"
               >
                 Guardar Cambios
               </button>

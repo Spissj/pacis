@@ -148,64 +148,64 @@ export default function Home() {
       </a>
 
       {/* Hero Section */}
-      <header className="pt-32 pb-20 md:pt-48 md:pb-32 px-gutter relative overflow-hidden bg-surface-bright">
+      <header className="pt-28 pb-16 md:pt-48 md:pb-32 px-gutter relative overflow-hidden bg-surface-bright">
         {/* Abstract Background Shape */}
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-primary-container/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 -z-10"></div>
         
         <div className="max-w-container-max mx-auto grid md:grid-cols-2 gap-12 lg:gap-24 items-center">
           {/* Left Content */}
-          <div className="flex flex-col items-start z-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-tertiary-container/10 border border-tertiary-container/30 mb-8">
+          <div className="flex flex-col items-center text-center md:items-start md:text-left z-10">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-tertiary-container/10 border border-tertiary-container/30 mb-6 md:mb-8 mx-auto md:mx-0">
               <span className="w-2 h-2 rounded-full bg-tertiary"></span>
               <span className="font-label-lg text-[10px] text-tertiary uppercase tracking-widest">
                 Repostería Artesanal · Hecho con amor
               </span>
             </div>
             
-            <h1 className="font-display-lg text-display-lg text-dark-chocolate mb-6 md:text-6xl text-5xl leading-[1.1] font-normal">
-              Cada torta, <br className="hidden lg:block" />
+            <h1 className="font-display-lg text-dark-chocolate mb-6 text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.15] font-normal text-balance">
+              Cada torta, <br className="hidden md:block" />
               <span className="italic text-primary">una historia</span> que se saborea
             </h1>
             
-            <p className="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-md">
+            <p className="font-body-lg text-on-surface-variant mb-8 md:mb-10 max-w-md mx-auto md:mx-0 text-sm sm:text-base md:text-lg">
               Diseños exclusivos y sabores que despiertan emociones. Creamos piezas únicas para tus momentos más especiales con ingredientes premium y dedicación artesanal.
             </p>
             
-            <div className="flex flex-wrap items-center gap-4 mb-16">
+            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 mb-10 md:mb-16 w-full sm:w-auto">
               <a
-                className="bg-primary text-surface-bright px-8 py-4 rounded hover:bg-on-primary-container transition-colors text-xs font-label-lg tracking-wider uppercase cursor-pointer"
+                className="w-full sm:w-auto bg-primary text-surface-bright px-8 py-4 rounded hover:bg-on-primary-container transition-colors text-xs font-label-lg tracking-wider uppercase cursor-pointer text-center"
                 href="#menu"
               >
                 Ver Creaciones
               </a>
               <button
                 onClick={() => setIsBuilderOpen(true)}
-                className="border border-dark-chocolate/30 text-dark-chocolate px-8 py-4 rounded hover:border-dark-chocolate transition-colors text-xs font-label-lg tracking-wider uppercase cursor-pointer bg-transparent"
+                className="w-full sm:w-auto border border-dark-chocolate/30 text-dark-chocolate px-8 py-4 rounded hover:border-dark-chocolate transition-colors text-xs font-label-lg tracking-wider uppercase cursor-pointer bg-transparent text-center"
               >
                 Diseñar Torta
               </button>
             </div>
             
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 pt-8 border-t border-outline-variant/20 w-full max-w-md">
+            <div className="grid grid-cols-3 gap-3 sm:gap-8 pt-8 border-t border-outline-variant/20 w-full max-w-md mx-auto md:mx-0">
               <div>
-                <div className="font-headline-md text-3xl text-dark-chocolate mb-1">5+</div>
-                <div className="font-label-md text-[10px] text-on-surface-variant uppercase tracking-wider">Años Exp.</div>
+                <div className="font-headline-md text-2xl sm:text-3xl text-dark-chocolate mb-1">5+</div>
+                <div className="font-label-md text-[9px] sm:text-[10px] text-on-surface-variant uppercase tracking-wider">Años Exp.</div>
               </div>
               <div>
-                <div className="font-headline-md text-3xl text-dark-chocolate mb-1">1k+</div>
-                <div className="font-label-md text-[10px] text-on-surface-variant uppercase tracking-wider">Clientes</div>
+                <div className="font-headline-md text-2xl sm:text-3xl text-dark-chocolate mb-1">1k+</div>
+                <div className="font-label-md text-[9px] sm:text-[10px] text-on-surface-variant uppercase tracking-wider">Clientes</div>
               </div>
               <div>
-                <div className="font-headline-md text-3xl text-dark-chocolate mb-1">100%</div>
-                <div className="font-label-md text-[10px] text-on-surface-variant uppercase tracking-wider">Artesanal</div>
+                <div className="font-headline-md text-2xl sm:text-3xl text-dark-chocolate mb-1">100%</div>
+                <div className="font-label-md text-[9px] sm:text-[10px] text-on-surface-variant uppercase tracking-wider">Artesanal</div>
               </div>
             </div>
           </div>
           
           {/* Right Image */}
-          <div className="relative z-10 md:ml-auto flex justify-center w-full">
-            <div className="relative w-full max-w-[420px] aspect-[4/5] rounded-t-full overflow-hidden border-4 border-surface-bright shadow-2xl bg-surface-container-low">
+          <div className="mt-4 md:mt-0 relative z-10 md:ml-auto flex justify-center w-full">
+            <div className="relative w-full max-w-[280px] sm:max-w-[340px] md:max-w-[420px] aspect-[4/5] rounded-t-full overflow-hidden border-4 border-surface-bright shadow-2xl bg-surface-container-low">
               <img
                 alt="Premium artisan bakery cake"
                 className="w-full h-full object-cover"
@@ -338,20 +338,14 @@ export default function Home() {
                     loop
                     muted
                     playsInline
-                    preload="metadata"
-                    onMouseEnter={(e) => {
-                      const playPromise = e.currentTarget.play();
-                      if (playPromise !== undefined) {
-                        playPromise.catch(() => {});
-                      }
-                    }}
-                    onMouseLeave={(e) => e.currentTarget.pause()}
+                    autoPlay
+                    preload="auto"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  {/* Play Overlay Badge */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-dark-chocolate/10 group-hover:bg-dark-chocolate/30 transition-colors z-10">
-                    <div className="bg-surface-bright/95 backdrop-blur-md text-primary p-4 rounded-full shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-                      <Play className="w-6 h-6 fill-primary" />
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-dark-chocolate/0 group-hover:bg-dark-chocolate/30 transition-all duration-300 z-10">
+                    <div className="bg-surface-bright/90 backdrop-blur-md text-primary p-4 rounded-full shadow-lg opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-300">
+                      <Maximize2 className="w-6 h-6 text-primary" />
                     </div>
                   </div>
                 </div>
