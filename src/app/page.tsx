@@ -71,6 +71,41 @@ function AccordionItem({ question, answer }: { question: string; answer: string 
   );
 }
 
+// Helper Animated Counter component using requestAnimationFrame
+function AnimatedCounter({ target, suffix = "", duration = 1500 }: { target: number; suffix?: string; duration?: number }) {
+  const [count, setCount] = React.useState(0);
+
+  React.useEffect(() => {
+    let startTimestamp: number | null = null;
+    let cancelled = false;
+
+    const step = (timestamp: number) => {
+      if (cancelled) return;
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      setCount(Math.floor(progress * target));
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+
+    window.requestAnimationFrame(step);
+    return () => {
+      cancelled = true;
+    };
+  }, [target, duration]);
+
+  const formatNumber = (num: number) => {
+    if (num >= 1000) {
+      const thousands = (num / 1000).toFixed(0);
+      return `${thousands}k`;
+    }
+    return num.toString();
+  };
+
+  return <>{formatNumber(count)}{suffix}</>;
+}
+
 export default function Home() {
   const { setIsBuilderOpen, setIsCartOpen } = useCart();
   
@@ -155,23 +190,23 @@ export default function Home() {
         <div className="max-w-container-max mx-auto grid md:grid-cols-2 gap-12 lg:gap-24 items-center">
           {/* Left Content */}
           <div className="flex flex-col items-center text-center md:items-start md:text-left z-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-tertiary-container/10 border border-tertiary-container/30 mb-6 md:mb-8 mx-auto md:mx-0">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-tertiary-container/10 border border-tertiary-container/30 mb-6 md:mb-8 mx-auto md:mx-0 animate-fade-in-up">
               <span className="w-2 h-2 rounded-full bg-tertiary"></span>
               <span className="font-label-lg text-[10px] text-tertiary uppercase tracking-widest">
                 Repostería Artesanal · Hecho con amor
               </span>
             </div>
             
-            <h1 className="font-display-lg text-dark-chocolate mb-6 text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.15] font-normal text-balance">
+            <h1 className="font-display-lg text-dark-chocolate mb-6 text-3xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.15] font-normal text-balance animate-fade-in-up animation-delay-100">
               Cada torta, <br className="hidden md:block" />
               <span className="italic text-primary">una historia</span> que se saborea
             </h1>
             
-            <p className="font-body-lg text-on-surface-variant mb-8 md:mb-10 max-w-md mx-auto md:mx-0 text-sm sm:text-base md:text-lg">
+            <p className="font-body-lg text-on-surface-variant mb-8 md:mb-10 max-w-md mx-auto md:mx-0 text-sm sm:text-base md:text-lg animate-fade-in-up animation-delay-200">
               Diseños exclusivos y sabores que despiertan emociones. Creamos piezas únicas para tus momentos más especiales con ingredientes premium y dedicación artesanal.
             </p>
             
-            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 mb-10 md:mb-16 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 mb-10 md:mb-16 w-full sm:w-auto animate-fade-in-up animation-delay-300">
               <a
                 className="w-full sm:w-auto bg-primary text-surface-bright px-8 py-4 rounded hover:bg-on-primary-container transition-colors text-xs font-label-lg tracking-wider uppercase cursor-pointer text-center"
                 href="#menu"
@@ -187,24 +222,30 @@ export default function Home() {
             </div>
             
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-3 sm:gap-8 pt-8 border-t border-outline-variant/20 w-full max-w-md mx-auto md:mx-0">
+            <div className="grid grid-cols-3 gap-3 sm:gap-8 pt-8 border-t border-outline-variant/20 w-full max-w-md mx-auto md:mx-0 animate-fade-in-up animation-delay-400">
               <div>
-                <div className="font-headline-md text-2xl sm:text-3xl text-dark-chocolate mb-1">5+</div>
+                <div className="font-headline-md text-2xl sm:text-3xl text-dark-chocolate mb-1">
+                  <AnimatedCounter target={5} suffix="+" />
+                </div>
                 <div className="font-label-md text-[9px] sm:text-[10px] text-on-surface-variant uppercase tracking-wider">Años Exp.</div>
               </div>
               <div>
-                <div className="font-headline-md text-2xl sm:text-3xl text-dark-chocolate mb-1">1k+</div>
+                <div className="font-headline-md text-2xl sm:text-3xl text-dark-chocolate mb-1">
+                  <AnimatedCounter target={1000} suffix="+" />
+                </div>
                 <div className="font-label-md text-[9px] sm:text-[10px] text-on-surface-variant uppercase tracking-wider">Clientes</div>
               </div>
               <div>
-                <div className="font-headline-md text-2xl sm:text-3xl text-dark-chocolate mb-1">100%</div>
+                <div className="font-headline-md text-2xl sm:text-3xl text-dark-chocolate mb-1">
+                  <AnimatedCounter target={100} suffix="%" />
+                </div>
                 <div className="font-label-md text-[9px] sm:text-[10px] text-on-surface-variant uppercase tracking-wider">Artesanal</div>
               </div>
             </div>
           </div>
           
           {/* Right Image */}
-          <div className="mt-4 md:mt-0 relative z-10 md:ml-auto flex justify-center w-full">
+          <div className="mt-4 md:mt-0 relative z-10 md:ml-auto flex justify-center w-full animate-fade-in-up animation-delay-200">
             <div className="relative w-full max-w-[280px] sm:max-w-[340px] md:max-w-[420px] aspect-[4/5] rounded-t-full overflow-hidden border-4 border-surface-bright shadow-2xl bg-surface-container-low">
               <img
                 alt="Premium artisan bakery cake"
