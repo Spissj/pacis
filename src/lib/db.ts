@@ -17,7 +17,7 @@ import {
 // Read configuration from environment or default to localstorage
 const getProvider = (): "localstorage" | "firebase" | "supabase" => {
   if (typeof window === "undefined") return "localstorage";
-  const provider = process.env.NEXT_PUBLIC_DATABASE_PROVIDER;
+  const provider = process.env.NEXT_PUBLIC_DATABASE_PROVIDER?.replace(/['"]/g, "").trim();
   if (provider === "supabase" && supabase) {
     return "supabase";
   }

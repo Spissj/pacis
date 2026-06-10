@@ -73,8 +73,9 @@ export default function AdminPage() {
 
     loadData();
 
+    const provider = process.env.NEXT_PUBLIC_DATABASE_PROVIDER?.replace(/['"]/g, "").trim();
     // Only subscribe to realtime if database provider is supabase
-    if (process.env.NEXT_PUBLIC_DATABASE_PROVIDER === "supabase") {
+    if (provider === "supabase") {
       const channel = supabase
         .channel("admin-orders-realtime")
         .on(
