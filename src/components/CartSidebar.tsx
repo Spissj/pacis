@@ -85,7 +85,7 @@ export default function CartSidebar() {
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Background Overlay */}
       <div
-        className="absolute inset-0 bg-dark-chocolate/35 backdrop-blur-xs transition-opacity cursor-pointer"
+        className="absolute inset-0 bg-dark-chocolate/40 backdrop-blur-xs cursor-pointer animate-fade-in"
         onClick={() => {
           if (!createdOrder) {
             setIsCartOpen(false);
@@ -94,7 +94,7 @@ export default function CartSidebar() {
       />
 
       <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-md bg-surface-bright border-l border-outline-variant/20 shadow-2xl flex flex-col justify-between h-full">
+        <div className="w-screen max-w-md bg-surface-bright border-l border-outline-variant/20 shadow-2xl flex flex-col justify-between h-full animate-slide-in-right">
           {/* Header */}
           <div className="p-6 border-b border-outline-variant/20 flex items-center justify-between">
             <h2 className="font-display-lg text-2xl text-dark-chocolate flex items-center gap-2">

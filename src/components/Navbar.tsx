@@ -59,37 +59,37 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-8">
           <a
             href="#menu"
-            className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest"
+            className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest underline-hover"
           >
             Menú
           </a>
           <a
             href="#proceso"
-            className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest"
+            className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest underline-hover"
           >
             Proceso
           </a>
           <a
             href="#galeria"
-            className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest"
+            className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest underline-hover"
           >
             Galería
           </a>
           <a
             href="#resenas"
-            className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest"
+            className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest underline-hover"
           >
             Reseñas
           </a>
           <Link
             href="/pedidos/tracking"
-            className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest"
+            className="text-on-surface-variant hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest underline-hover"
           >
             Seguimiento
           </Link>
           <Link
             href="/admin"
-            className="text-on-surface-variant/70 hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest border-l border-dark-chocolate/10 pl-8"
+            className="text-on-surface-variant/70 hover:text-primary transition-colors duration-300 font-label-lg text-xs uppercase tracking-widest border-l border-dark-chocolate/10 pl-8 underline-hover"
           >
             Admin
           </Link>
@@ -136,7 +136,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-surface-bright border-b border-outline-variant/20 shadow-lg animate-fade-in">
+        <div className="md:hidden absolute top-full left-0 w-full bg-surface-bright/95 backdrop-blur-md border-b border-outline-variant/20 shadow-lg animate-fade-in">
           <div className="flex flex-col p-5 gap-4">
             <a
               href="#menu"

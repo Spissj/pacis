@@ -5,6 +5,7 @@ import { Product } from "@/lib/seed";
 import { getProducts } from "@/lib/db";
 import { useCart } from "@/context/CartContext";
 import { Search, Cookie, X } from "lucide-react";
+import ScrollReveal from "@/components/ScrollReveal";
 
 const CATEGORIES = [
   { id: "all", label: "Todos" },
@@ -77,36 +78,38 @@ export default function Catalog() {
         </div>
 
         {/* Search & Filter Bar */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12 border-b border-outline-variant/20 pb-8">
-          {/* Filter Tabs */}
-          <div className="flex flex-wrap gap-2.5">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-5 py-2 rounded-full border text-xs font-label-md uppercase tracking-wider transition-all cursor-pointer ${
-                  activeCategory === cat.id
-                    ? "border-primary text-primary bg-primary/5 font-semibold"
-                    : "border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
+        <ScrollReveal delay={100} animation="fadeInUp">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12 border-b border-outline-variant/20 pb-8">
+            {/* Filter Tabs */}
+            <div className="flex flex-wrap gap-2.5">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-5 py-2 rounded-full border text-xs font-label-md uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                    activeCategory === cat.id
+                      ? "border-primary text-primary bg-primary/5 font-semibold scale-105 shadow-sm"
+                      : "border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary hover:bg-surface-container-low"
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
 
-          {/* Search Input */}
-          <div className="relative w-full md:w-80">
-            <input
-              type="text"
-              placeholder="Buscar delicias..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg pl-4 pr-10 py-2.5 text-sm text-dark-chocolate placeholder:text-on-surface-variant/50 outline-none transition-colors"
-            />
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 pointer-events-none w-5 h-5" />
+            {/* Search Input */}
+            <div className="relative w-full md:w-80">
+              <input
+                type="text"
+                placeholder="Buscar delicias..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-surface-container-low border border-outline-variant/40 focus:border-primary focus:ring-1 focus:ring-primary rounded-lg pl-4 pr-10 py-2.5 text-sm text-dark-chocolate placeholder:text-on-surface-variant/50 outline-none transition-all duration-300"
+              />
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 pointer-events-none w-5 h-5" />
+            </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Loading State */}
         {isLoading ? (
@@ -122,48 +125,58 @@ export default function Catalog() {
           </div>
         ) : (
           /* Product Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
-            {filteredProducts.map((product) => (
-              <div key={product.id} className="group flex flex-col">
-                {/* Product Image */}
-                <div 
-                  onClick={() => setSelectedProduct(product)}
-                  className="aspect-[4/5] overflow-hidden mb-6 bg-surface-container-low rounded cursor-pointer relative"
-                >
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-dark-chocolate/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button className="bg-surface-bright/95 text-dark-chocolate px-4 py-2 rounded text-xs font-label-md uppercase tracking-wider shadow">
-                      Ver Detalles
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+            {filteredProducts.map((product, index) => (
+              <ScrollReveal
+                key={product.id}
+                delay={(index % 3) * 100}
+                animation="fadeInUp"
+                className="h-full"
+              >
+                <div className="group flex flex-col premium-card p-5 rounded-xl border border-outline-variant/15 bg-surface-bright h-full">
+                  {/* Product Image */}
+                  <div 
+                    onClick={() => setSelectedProduct(product)}
+                    className="relative aspect-[4/5] overflow-hidden rounded-lg bg-surface-container-low cursor-pointer mb-5"
+                  >
+                    <span className="absolute top-3 left-3 z-10 text-[9px] font-bold tracking-widest uppercase text-primary bg-surface-bright/90 backdrop-blur-[2px] px-2.5 py-1 rounded-full shadow-sm">
+                      {product.category}
+                    </span>
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-dark-chocolate/30 opacity-0 group-hover:opacity-100 backdrop-blur-[2px] transition-all duration-300 flex items-center justify-center">
+                      <button className="transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500 bg-surface-bright/95 text-dark-chocolate px-5 py-2.5 rounded-full text-xs font-label-md uppercase tracking-wider shadow-md hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                        Ver Detalles
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Product Info */}
+                  <h3 
+                    onClick={() => setSelectedProduct(product)}
+                    className="font-headline-sm text-dark-chocolate mb-2 text-2xl hover:text-primary cursor-pointer transition-colors duration-300"
+                  >
+                    {product.name}
+                  </h3>
+                  <p className="text-on-surface-variant font-body-md mb-4 flex-grow line-clamp-2 text-sm leading-relaxed">
+                    {product.description}
+                  </p>
+                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/20">
+                    <span className="font-serif text-lg text-primary italic font-medium">
+                      Desde {formatPrice(product.price)}
+                    </span>
+                    <button
+                      onClick={() => addToCart(product)}
+                      className="text-dark-chocolate hover:text-primary font-label-md uppercase tracking-wider underline-hover pb-1 text-sm cursor-pointer transition-colors"
+                    >
+                      Encargar
                     </button>
                   </div>
                 </div>
-
-                {/* Product Info */}
-                <h3 
-                  onClick={() => setSelectedProduct(product)}
-                  className="font-headline-sm text-dark-chocolate mb-2 text-2xl hover:text-primary cursor-pointer transition-colors"
-                >
-                  {product.name}
-                </h3>
-                <p className="text-on-surface-variant font-body-md mb-4 flex-grow line-clamp-2">
-                  {product.description}
-                </p>
-                <div className="flex items-center justify-between mt-auto pt-4 border-t border-outline-variant/30">
-                  <span className="font-serif text-lg text-primary italic font-medium">
-                    Desde {formatPrice(product.price)}
-                  </span>
-                  <button
-                    onClick={() => addToCart(product)}
-                    className="text-dark-chocolate hover:text-primary font-label-md uppercase tracking-wider underline-hover pb-1 text-sm cursor-pointer"
-                  >
-                    Encargar
-                  </button>
-                </div>
-              </div>
+              </ScrollReveal>
             ))}
           </div>
         )}
